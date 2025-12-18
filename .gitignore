@@ -1,2 +1,6 @@
-data/raw/
+# Virtual environment
 .venv/
+
+# Data files
+data/raw/
+data/processed/
