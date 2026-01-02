@@ -4,3 +4,7 @@
 # Data files
 data/raw/
 data/processed/
+data/appended/
+
+# Random test file
+tests/test.py
