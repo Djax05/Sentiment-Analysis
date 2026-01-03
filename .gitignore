@@ -2,9 +2,7 @@
 .venv/
 
 # Data files
-data/raw/
-data/processed/
-data/appended/
+data/
 
 # Random test file
 tests/test.py
