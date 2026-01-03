@@ -1,4 +1,5 @@
 import torch.nn as nn
+from models.encoder import MeanPoolingEncoder
 
 
 class EmotionsSentimentModel(nn.Module):
@@ -6,7 +7,6 @@ class EmotionsSentimentModel(nn.Module):
             self,
             vocab_size: int,
             embedding_dim: int = 128,
-            hidden_dim: int = 256,
             num_emotions: int = 6
     ):
         super().__init__()
@@ -17,24 +17,23 @@ class EmotionsSentimentModel(nn.Module):
             padding_idx=0
         )
 
-        self.encoder = nn.LSTM(
-            input_size=embedding_dim,
-            hidden_size=hidden_dim,
-            batch_first=True
-        )
+        self.encoder = MeanPoolingEncoder()
 
-        self.sentiment_head = nn.Linear(hidden_dim, 1)
-        self.emotion_head = nn.Linear(hidden_dim, num_emotions)
+        self.sentiment_head = nn.Linear(embedding_dim, 1)
+        self.emotion_head = nn.Linear(embedding_dim, num_emotions)
 
-    def forward(self, input_ids):
+    def forward(self, input_ids, task=str):
+        attention_mask = (input_ids != 0).float()
 
         embedded = self.embeddings(input_ids)
 
-        _, (hidden, _) = self.encoder(embedded)
+        sentence_rep = self.encoder(embedded, attention_mask)
 
-        sentence_rep = hidden[-1]
+        if task == "sentiment":
+            return self.sentiment_head(sentence_rep)
 
-        sentiment_logits = self.sentiment_head(sentence_rep)
-        emotion_logits = self.emotion_head(sentence_rep)
+        if task == "emotion":
+            return self.emotion_head(sentence_rep)
 
-        return sentiment_logits, emotion_logits
+        else:
+            raise ValueError(f"Unknown task: {task}")

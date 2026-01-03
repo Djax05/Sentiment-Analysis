@@ -9,6 +9,7 @@ from utils import ALLOWED_EMOTIONS
 from .tokenizer import build_vocab, encode_text
 from scripts.data_preprocessing import clean_text
 
+
 # Defined Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA = BASE_DIR / "data"
@@ -16,7 +17,7 @@ PROCESSED_DATA = DATA / "processed"
 
 # Hyperparameters
 BATCH_SIZE = 32
-EPOCHS = 3
+EPOCHS = 10
 LEARNING_RATE = 1e-3
 
 # importing dataset
@@ -119,13 +120,16 @@ for epoch in range(EPOCHS):
         sent_labels = sent_batch["labels"].to(device)
         sent_labels = sent_labels.unsqueeze(1)
 
-        sent_logits, _ = model(sent_input_ids)
-        sent_loss = sentiment_loss_fn(sent_logits, sent_labels)
-
         emo_input_ids = emo_batch["input_ids"].to(device)
         emo_labels = emo_batch["labels"].to(device)
 
-        _, emo_logits = model(emo_input_ids)
+        optimizer.zero_grad()
+
+        sent_logits = model(sent_input_ids, task="sentiment")
+        emo_logits = model(emo_input_ids, task="emotion")
+
+        sent_loss = sentiment_loss_fn(sent_logits, sent_labels)
+
         emo_loss = emotion_loss_fn(emo_logits, emo_labels)
 
         loss = sent_loss + emo_loss
