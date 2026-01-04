@@ -8,6 +8,7 @@ from .models import EmotionsSentimentModel
 from utils import ALLOWED_EMOTIONS
 from .tokenizer import build_vocab, encode_text
 from scripts.data_preprocessing import clean_text
+from .evaluate import evaluate
 
 
 # Defined Paths
@@ -138,4 +139,8 @@ for epoch in range(EPOCHS):
 
         total_loss += loss.item()
 
+    val_metric = evaluate(model, sentiment_loader, emotion_loader, device)
+
+    print("Validation Sentiment: ", val_metric["sentiment"])
+    print("Validation emotion: ", val_metric["emotion"])
     print(f"Epoch {epoch + 1}: Loss = {total_loss:.4f}")
