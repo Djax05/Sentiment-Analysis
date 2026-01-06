@@ -18,7 +18,7 @@ PROCESSED_DATA = DATA / "processed"
 
 # Hyperparameters
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 2
 LEARNING_RATE = 1e-3
 
 # importing dataset
@@ -143,4 +143,5 @@ for epoch in range(EPOCHS):
 
     print("Validation Sentiment: ", val_metric["sentiment"])
     print("Validation emotion: ", val_metric["emotion"])
+    print("Validation per_emotion: ", val_metric["per_emotion"])
     print(f"Epoch {epoch + 1}: Loss = {total_loss:.4f}")

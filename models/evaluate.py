@@ -1,6 +1,7 @@
 import torch
 from sklearn.metrics import (accuracy_score, f1_score,
                              precision_score, recall_score)
+from utils import ALLOWED_EMOTIONS
 
 
 def evaluate(model, sentiment_dataloader, emotion_dataloader, device):
@@ -43,6 +44,18 @@ def evaluate(model, sentiment_dataloader, emotion_dataloader, device):
     all_emotion_preds = torch.cat(all_emotion_preds).numpy()
     all_emotions_targets = torch.cat(all_emotions_targets).numpy()
 
+    per_emotion_metrics = {}
+
+    for i, emotion in enumerate(ALLOWED_EMOTIONS):
+        y_true = all_emotions_targets[:, i]
+        y_pred = all_emotion_preds[:, i]
+
+        per_emotion_metrics[emotion] = {
+            "precision": precision_score(y_true, y_pred, zero_division=0),
+            "recall": recall_score(y_true, y_pred, zero_division=0),
+            "f1": f1_score(y_true, y_pred, zero_division=0)
+        }
+
     sentiment_metrics = {
         "accuracy": accuracy_score(all_sent_targets, all_sent_preds),
         "precision": precision_score(all_sent_targets,
@@ -59,7 +72,15 @@ def evaluate(model, sentiment_dataloader, emotion_dataloader, device):
         "macro_f1": f1_score(all_emotions_targets, all_emotion_preds,
                              average="macro", zero_division=0)
     }
+    # print("TARGET SAMPLE:")
+    # print(all_emotions_targets[:5])
+
+    # print("PRED SAMPLE:")
+    # print(all_emotion_preds[:5])
+
     return {
         "sentiment": sentiment_metrics,
-        "emotion": emotion_metric
+        "emotion": emotion_metric,
+        "per_emotion": per_emotion_metrics
     }
+
