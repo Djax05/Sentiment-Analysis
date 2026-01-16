@@ -1,6 +1,11 @@
+import pickle
+from pathlib import Path
 from collections import Counter
+
+
 PAD_TOKEN = "<PAD>"
 UNK_TOKEN = "<UNK>"
+VOCAB_PATH = Path("artifacts/vocab.pkl")
 
 
 def build_vocab(texts, max_size):
@@ -17,6 +22,22 @@ def build_vocab(texts, max_size):
         vocab[word] = len(vocab)
 
     return vocab
+
+
+def save_vocab(vocab, path=VOCAB_PATH):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "wb") as f:
+        pickle.dump(vocab, f)
+
+
+def load_vocab(path=VOCAB_PATH):
+    if not path.exists():
+        raise FileNotFoundError(
+            "Vocab not found. Run vocab building first."
+        )
+
+    with open(path, "rb") as f:
+        return pickle.load(f)
 
 
 def encode_text(text, vocab):
