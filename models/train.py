@@ -104,6 +104,7 @@ def load_dataset(sentiment_text, sentiment_labels,
         texts=goemotions_text,
         labels=goemotions_labels,
     )
+
     collate = partial(collate_fn, vocab=vocab)
 
     sentiment_loader = DataLoader(
