@@ -57,7 +57,6 @@ def import_data(PROCESSED_DATA):
     goemotions_text = goemotions_df["text"].values.tolist()
     goemotions_labels = goemotions_df[ALLOWED_EMOTIONS].to_numpy().tolist()
 
-    texts = sentiment_text + goemotions_text
     return (
         sentiment_text,
         sentiment_labels,
@@ -124,6 +123,40 @@ def load_dataset(sentiment_text, sentiment_labels,
     return sentiment_loader, emotion_loader
 
 
+def metrics(sent_targets, sent_preds, emo_targets, emo_preds):
+    per_emotion_metrics = {}
+
+    for i, emotion in enumerate(ALLOWED_EMOTIONS):
+        y_true = emo_targets[:, i]
+        y_pred = emo_preds[:, i]
+
+        per_emotion_metrics[emotion] = {
+            "precision": precision_score(y_true,
+                                         y_pred, zero_division=0),
+            "recall": recall_score(y_true, y_pred, zero_division=0),
+            "f1": f1_score(y_true, y_pred, zero_division=0)
+        }
+
+    sentiment_metrics = {
+        "accuracy": accuracy_score(sent_targets, sent_preds),
+        "precision": precision_score(sent_targets,
+                                     sent_preds, zero_division=0),
+        "recall": recall_score(sent_targets, sent_preds,
+                               zero_division=0),
+        "f1": f1_score(sent_targets, sent_preds,
+                       zero_division=0)
+    }
+
+    emotion_metric = {
+        "micro_f1": f1_score(emo_targets, emo_preds,
+                             average="micro", zero_division=0),
+        "macro_f1": f1_score(emo_targets, emo_preds,
+                             average="macro", zero_division=0)
+    }
+
+    return emotion_metric, sentiment_metrics, per_emotion_metrics
+
+
 def train_model(model, sentiment_loader, emotion_loader, device,
                 optimizer, sentiment_loss_fn, emotion_loss_fn):
     model.train()
@@ -173,35 +206,12 @@ def train_model(model, sentiment_loader, emotion_loader, device,
         sent_threshold = 0.5
         sent_preds = (sent_probs >= sent_threshold).astype(int)
 
-        per_emotion_metrics = {}
-
-        for i, emotion in enumerate(ALLOWED_EMOTIONS):
-            y_true = emo_targets[:, i]
-            y_pred = emo_preds[:, i]
-
-            per_emotion_metrics[emotion] = {
-                "precision": precision_score(y_true,
-                                             y_pred, zero_division=0),
-                "recall": recall_score(y_true, y_pred, zero_division=0),
-                "f1": f1_score(y_true, y_pred, zero_division=0)
-            }
-
-        sentiment_metrics = {
-            "accuracy": accuracy_score(sent_targets, sent_preds),
-            "precision": precision_score(sent_targets,
-                                         sent_preds, zero_division=0),
-            "recall": recall_score(sent_targets, sent_preds,
-                                   zero_division=0),
-            "f1": f1_score(sent_targets, sent_preds,
-                           zero_division=0)
-        }
-
-        emotion_metric = {
-            "micro_f1": f1_score(emo_targets, emo_preds,
-                                 average="micro", zero_division=0),
-            "macro_f1": f1_score(emo_targets, emo_preds,
-                                 average="macro", zero_division=0)
-        }
+        (emotion_metric,
+         sentiment_metrics,
+         per_emotion_metrics) = metrics(sent_targets,
+                                        sent_preds,
+                                        emo_targets,
+                                        emo_preds)
 
         if emotion_metric["macro_f1"] > best_macro_f1:
             best_macro_f1 = emotion_metric["macro_f1"]
