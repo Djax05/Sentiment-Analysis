@@ -36,20 +36,6 @@ def import_data(PROCESSED_DATA):
     sentiment_df = pd.read_csv(PROCESSED_DATA / "sentiment_train.csv")
     goemotions_df = pd.read_csv(PROCESSED_DATA / "goemotions_train.csv")
 
-    # sentiment_df["sentence"] = (
-    #     sentiment_df["sentence"]
-    #     .fillna("")
-    #     .astype(str)
-    #     .apply(clean_text)
-    # )
-
-    # goemotions_df["text"] = (
-    #     goemotions_df["text"]
-    #     .fillna("")
-    #     .astype(str)
-    #     .apply(clean_text)
-    # )
-
     # Defining the columns to be used
     sentiment_text = sentiment_df["sentence"].values.tolist()
     sentiment_labels = torch.tensor(sentiment_df["sentiment"])

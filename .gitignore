@@ -9,3 +9,6 @@ tests/test.py
 
 # checpoint files
 checkpoints/
+
+app/
+main.py

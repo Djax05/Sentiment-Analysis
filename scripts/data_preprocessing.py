@@ -16,13 +16,22 @@ def clean_text(text: str) -> str:
 
 def preprocess_sentiment(df) -> pd.DataFrame:
     df = df.copy()
-    df["sentence"] = df["sentence"].apply(clean_text)
+    df["sentence"] = (
+        df["sentence"]
+        .fillna("")
+        .astype(str)
+        .apply(clean_text))
+
     return df
 
 
 def preprocess_goemotions(df) -> pd.DataFrame:
     df = df.copy()
-    df["text"] = df["text"].apply(clean_text)
+    df["text"] = (
+        df["text"]
+        .fillna("")
+        .astype(str)
+        .apply(clean_text))
     df = df[["text"] + ALLOWED_EMOTIONS].copy()
     df = df[df[ALLOWED_EMOTIONS].sum(axis=1) > 0]
     return df

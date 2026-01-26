@@ -1,6 +1,6 @@
 import pandas as pd
-from ..models.tokenizer import build_vocab, save_vocab
-from ..models.training_utils import PROCESSED_DATA
+from ml.models.tokenizer import build_vocab, save_vocab
+from config import PROCESSED_DATA
 from scripts.data_preprocessing import clean_text
 
 
