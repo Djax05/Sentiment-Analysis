@@ -5,7 +5,11 @@ from collections import Counter
 
 PAD_TOKEN = "<PAD>"
 UNK_TOKEN = "<UNK>"
-VOCAB_PATH = Path("artifacts/vocab.pkl")
+VOCAB_PATH = Path("ml/artifacts/vocab.pkl")
+
+
+def tokenize(text: str):
+    return text.lower().split()
 
 
 def build_vocab(texts, max_size):
@@ -15,7 +19,7 @@ def build_vocab(texts, max_size):
             continue
         if text.strip() == "":
             continue
-        counter.update(text.split())
+        counter.update(tokenize(text))
 
     vocab = {PAD_TOKEN: 0, UNK_TOKEN: 1}
     for word, _ in counter.most_common(max_size - 2):
@@ -40,5 +44,15 @@ def load_vocab(path=VOCAB_PATH):
         return pickle.load(f)
 
 
-def encode_text(text, vocab):
-    return [vocab.get(word, vocab[UNK_TOKEN]) for word in text.split()]
+def encode_text(text, vocab, max_len=100):
+
+    tokens = tokenize(text)
+    indices = [vocab.get(word, vocab[UNK_TOKEN]) for word in tokens]
+
+    if len(indices) > max_len:
+        indices = indices[:max_len]
+
+    else:
+        indices += [vocab[PAD_TOKEN]] * (max_len - len(indices))
+
+    return indices
