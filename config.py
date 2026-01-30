@@ -17,3 +17,11 @@ EMOTION_THRESHOLD = {
     "surprise": 0.35,  # surprise
     "neutral": 0.50,  # neutral
 }
+
+TOKENIZER_PARAMETERS = {
+    "pad_token": "<PAD>",
+    "unk_token": "<UNK>",
+    "max_vocab_size": 30000,
+    "max_seq_len": 100,
+    "lowercase": True
+}

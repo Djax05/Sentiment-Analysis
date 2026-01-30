@@ -32,8 +32,10 @@ class EmotionsSentimentModel(nn.Module):
         if task == "sentiment":
             return self.sentiment_head(sentence_rep)
 
-        if task == "emotion":
+        elif task == "emotion":
             return self.emotion_head(sentence_rep)
 
         else:
-            raise ValueError(f"Unknown task: {task}")
+            sentiment = self.sentiment_head(sentence_rep)
+            emotion = self.emotion_head(sentence_rep)
+            return sentiment, emotion
