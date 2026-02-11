@@ -15,6 +15,20 @@ RAW_DATA = DATA_DIR / "raw"
 # Model Checkpoint
 CHECKPOINT = ML_DIR / "checkpoints"
 
+SENTIMENT_LABELS = {
+    0: "negative",
+    1: "positive"
+}
+
+# Allowed emotions
+ALLOWED_EMOTIONS = [
+    "joy",
+    "sadness",
+    "anger",
+    "fear",
+    "surprise",
+    "neutral"
+    ]
 # Threshold values
 EMOTION_THRESHOLD = {
     "joy": 0.35,

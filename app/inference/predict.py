@@ -2,8 +2,8 @@ import torch
 
 from .loader import load_artifacts
 from ml.preprocessing.text_encoder import encode_text
-from config import EMOTION_THRESHOLD
-from utils import ALLOWED_EMOTIONS
+from app.config import EMOTION_THRESHOLD
+from app.config import ALLOWED_EMOTIONS
 
 
 def predict_text(text: str):

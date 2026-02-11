@@ -1,7 +1,7 @@
 [project]
 name = "emotion-reader"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sentiment Analysis API"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,6 +12,18 @@ dependencies = [
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
     "scikit-learn>=1.8.0",
-    "torch>=2.9.1",
+    "torch",
     "uvicorn>=0.40.0",
+    "markupsafe<3.0"
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "ml*"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

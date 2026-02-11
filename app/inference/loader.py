@@ -2,7 +2,7 @@ import torch
 from ml.preprocessing.vocab import load_vocab
 from ml.models.models import EmotionsSentimentModel
 from app.core.logging_config import get_logger
-from config import CHECKPOINT
+from app.config import CHECKPOINT
 
 
 MODEL_PATH = CHECKPOINT / "best_model.pt"
