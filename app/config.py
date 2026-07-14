@@ -1,52 +1,15 @@
 from pydantic_settings import BaseSettings
-from pathlib import Path
 
-# Project Root
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# ML directory
-ML_DIR = BASE_DIR / "ml"
-
-# Data Path
-DATA_DIR = ML_DIR / "data"
-PROCESSED_DATA = DATA_DIR / "processed"
-RAW_DATA = DATA_DIR / "raw"
-
-# Model Checkpoint
-CHECKPOINT = ML_DIR / "checkpoints"
-
-SENTIMENT_LABELS = {
-    0: "negative",
-    1: "positive"
-}
-
-# Allowed emotions
-ALLOWED_EMOTIONS = [
-    "joy",
-    "sadness",
-    "anger",
-    "fear",
-    "surprise",
-    "neutral"
-    ]
-# Threshold values
-EMOTION_THRESHOLD = {
-    "joy": 0.35,
-    "sadness": 0.35,
-    "anger": 0.35,
-    "fear": 0.30,
-    "surprise": 0.35,
-    "neutral": 0.50,
-}
-
-# Tokenizer Parameters
-TOKENIZER_PARAMETERS = {
-    "pad_token": "<PAD>",
-    "unk_token": "<UNK>",
-    "max_vocab_size": 30000,
-    "max_seq_len": 100,
-    "lowercase": True
-}
+from config import (
+    BASE_DIR,
+    DATA_DIR,
+    PROCESSED_DATA,
+    RAW_DATA,
+    CHECKPOINT,
+    EMOTION_THRESHOLD,
+    TOKENIZER_PARAMETERS,
+)
+from utils import SENTIMENT_LABELS, ALLOWED_EMOTIONS
 
 # Model
 MODEL = CHECKPOINT / "best_model.pt"
