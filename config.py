@@ -4,24 +4,9 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = BASE_DIR / "ml"
 DATA_DIR = MODEL_DIR / "data"
 PROCESSED_DATA = DATA_DIR / "processed"
-RAW_DATA = DATA_DIR / "raw"
 
 CHECKPOINT = MODEL_DIR / "checkpoints"
 
-
-EMOTION_THRESHOLD = {
-    "joy": 0.35,
-    "sadness": 0.35,  # sadness
-    "anger": 0.35,  # anger
-    "fear": 0.30,  # fear
-    "surprise": 0.35,  # surprise
-    "neutral": 0.50,  # neutral
-}
-
-TOKENIZER_PARAMETERS = {
-    "pad_token": "<PAD>",
-    "unk_token": "<UNK>",
-    "max_vocab_size": 30000,
-    "max_seq_len": 100,
-    "lowercase": True
-}
+BATCH_SIZE = 32
+EPOCHS = 20
+LEARNING_RATE = 1e-3
