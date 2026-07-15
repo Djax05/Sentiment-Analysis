@@ -14,7 +14,8 @@ dependencies = [
     "scikit-learn>=1.8.0",
     "torch",
     "uvicorn>=0.40.0",
-    "markupsafe<3.0"
+    "markupsafe<3.0",
+    "kagglehub>=1.0.2",
 ]
 
 [tool.setuptools.packages.find]
