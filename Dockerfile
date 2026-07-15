@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock ./
+COPY config.py utils.py ./
 COPY app ./app
 COPY ml/checkpoints ./ml/checkpoints
 COPY ml/models ./ml/models
-COPY ml/preprocessing ./ml/preprocessing
 COPY ml/artifacts ./ml/artifacts
 
 RUN uv pip install --system .
