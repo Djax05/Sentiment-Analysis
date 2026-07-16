@@ -1,5 +1,5 @@
 import torch
-from ml.preprocessing.vocab import load_vocab
+from ml.models.tokenizer import load_vocab
 from ml.models.models import EmotionsSentimentModel
 from app.core.logging_config import get_logger
 from app.config import CHECKPOINT
