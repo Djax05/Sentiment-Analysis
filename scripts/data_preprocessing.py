@@ -3,26 +3,13 @@ import pandas as pd
 from utils import ALLOWED_EMOTIONS
 
 
-def clean_text(text: str) -> str:
+def clean_text(text) -> str:
     if not isinstance(text, str):
         return ""
-    text = text.lower()
-    text = re.sub(r"http\S+|www\S+", "", text)
-    text = re.sub(r"@\w+|#\w+", "", text)
-    text = re.sub(r"[^a-z\s]", "", text)
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"@\w+|https?://\S+|www\.\S+", "", str(text))
+    text = re.sub(r"[^a-zA-Z]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip().lower()
     return text
-
-
-def preprocess_sentiment(df) -> pd.DataFrame:
-    df = df.copy()
-    df["sentence"] = (
-        df["sentence"]
-        .fillna("")
-        .astype(str)
-        .apply(clean_text))
-
-    return df
 
 
 def preprocess_goemotions(df) -> pd.DataFrame:
