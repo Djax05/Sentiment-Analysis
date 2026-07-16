@@ -34,32 +34,28 @@ A production-ready FastAPI application for **simultaneous sentiment** (positive/
 │   │   ├── encoder.py         # Mean pooling encoder
 │   │   ├── train.py           # Training pipeline
 │   │   ├── evaluate.py        # Model evaluation
-│   │   ├── tokenizer.py       # Text encoding
+│   │   ├── tokenizer.py       # Text encoding & vocab (training + serving)
 │   │   ├── focal_loss.py      # Focal loss implementation
-│   │   ├── training_utils.py  # Training utilities
+│   │   ├── training_utils.py  # Shared training/validation setup
 │   │   ├── validation.py      # Validation logic
-│   │   └── test.py            # Testing utilities
+│   │   ├── test.py            # Test-split evaluation
+│   │   └── tune_threshold.py  # Per-emotion threshold tuning
 │   ├── datasets/
 │   │   ├── sentiment_dataset.py    # Sentiment data loader
 │   │   └── emotion_dataset.py      # Emotion data loader
-│   ├── preprocessing/
-│   │   ├── text_encoder.py    # Text encoding functions
-│   │   └── vocab.py           # Vocabulary management
 │   ├── data/
-│   │   ├── raw/               # Original datasets
-│   │   ├── cleaned/           # Preprocessed data
-│   │   ├── processed/         # Train/val/test splits
-│   │   └── appended/          # Combined datasets
+│   │   ├── raw/                # Original datasets
+│   │   ├── cleaned/            # Preprocessed GoEmotions data
+│   │   └── processed/          # Train/val/test splits
 │   ├── checkpoints/           # Model checkpoints
 │   │   ├── best_model.pt
 │   │   └── last_model.pt
-│   ├── artifacts/             # Serialized vocab & models
+│   ├── artifacts/             # vocab.pkl & thresholds.json
 │   └── notebooks/             # EDA & analysis notebooks
 ├── scripts/
-│   ├── data_preprocessing.py   # Data cleaning pipeline
-│   └── build.py               # Build utilities
-├── tests/
-│   └── test.py                # Unit tests
+│   ├── data_preprocessing.py       # Text cleaning + GoEmotions filtering
+│   ├── build_sentiment_dataset.py  # Rebuilds the Sentiment140 split from raw
+│   └── build.py                    # Builds the vocabulary
 ├── config.py                  # Global configuration
 ├── utils.py                   # Project utilities
 ├── Dockerfile                 # Docker image definition
@@ -168,13 +164,18 @@ The `EmotionsSentimentModel` is a dual-task neural network:
 
 ## 📚 Training
 
-### Datasets
+### Data Sources
 
 The model is trained on two datasets:
-- **Sentiment Dataset**: Binary sentiment classification (positive/negative)
-  - Training split used for sentiment head
-- **GoEmotions Dataset**: 6-class multi-label emotion classification
-  - Training split used for emotion head
+
+- **Sentiment task — [Sentiment140](https://www.kaggle.com/datasets/kazanova/sentiment140)** (1.6M tweets, Kaggle: `kazanova/sentiment140`; original source: Stanford, Go et al. 2009). The raw `training.1600000.processed.noemoticon.csv` file is preprocessed by `scripts/build_sentiment_dataset.py`: it keeps only the `sentence` and `sentiment` columns, remaps labels `4 → 1` (binary `0` = negative, `1` = positive), and cleans the text (strips `@mentions` and URLs, replaces non-letters with spaces, collapses whitespace, lowercases).
+- **Emotion task — GoEmotions** (Google Research), filtered down to 6 labels: joy, sadness, anger, fear, surprise, neutral. Multi-label — a single example can carry more than one emotion. The label distribution is heavily imbalanced: `neutral` has ~14.7k positive examples vs. `fear`'s ~829, which is why the loss function below weights per class.
+
+### Training Approach
+
+`EmotionsSentimentModel` is a single shared encoder with two task heads: a binary sentiment head trained with `BCEWithLogitsLoss`, and a multi-label emotion head trained with a custom focal loss. The focal loss uses a per-class `alpha` tensor (`[1.85, 2.18, 1.86, 4.63, 2.63, 0.26]`, inverse-frequency weights in the emotion order above) instead of a flat weight — this was the single biggest improvement to emotion-detection quality, since it keeps the model paying attention to rare classes like `fear` instead of collapsing toward the majority `neutral` class.
+
+Training uses early stopping (patience of 3 epochs with no improvement in validation macro F1); the checkpoint with the best macro F1 is saved as `best_model.pt`. After training, per-emotion decision thresholds are tuned on the validation set via an F1 sweep (`ml/models/tune_threshold.py`) and saved to `ml/artifacts/thresholds.json`, which is then loaded at both validation and inference time. The full pipeline runs in this order: **train → tune thresholds → validate**.
 
 ### Training Pipeline
 
@@ -284,6 +285,17 @@ The model is evaluated on multiple metrics:
 - **Recall** - False negative rate
 
 Evaluation code: `ml/models/evaluate.py`
+
+### Results
+
+On the validation split, the sentiment head reaches **~78% accuracy / ~0.77 F1**, and the emotion head reaches **~0.46 macro F1 / ~0.66 micro F1** — competitive with published BERT baselines on GoEmotions for a from-scratch (non-pretrained) encoder.
+
+## ⚠️ Known Limitations
+
+- **Distribution shift**: the sentiment head was trained on 2009-era tweets (Sentiment140). It performs well on informal, social-media-style phrasing (`"i love this so much best day ever"` → 0.92 positive) but degrades on idiomatic general English (`"i feel so good i could jump for joy"` was misclassified negative in controlled testing).
+- **Preprocessing consistency**: `encode_text` expects input cleaned the same way the training data was (lowercase, punctuation stripped). `predict_text()` in `app/inference/predict.py` applies `clean_text()` to the input before encoding, so this is handled automatically at inference time rather than left to the caller.
+- **Fixed-length padding**: `encode_text` pads every sequence to 100 tokens. This is consistent between training and inference, but it dilutes the signal for short inputs.
+- **Rare-class ceiling**: `fear` has only ~829 training examples; performance on rare emotions is fundamentally data-limited, not just a loss-function problem.
 
 ## 📝 Logging & Monitoring
 

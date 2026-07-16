@@ -7,7 +7,4 @@ data/
 # Random test file
 tests/test.py
 
-# checpoint files
-checkpoints/
-
 # temporary files
