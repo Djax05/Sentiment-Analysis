@@ -1,14 +1,18 @@
 import torch
+import json
 
 from .loader import load_artifacts
-from ml.preprocessing.text_encoder import encode_text
-from app.config import EMOTION_THRESHOLD
+from ml.models.tokenizer import encode_text
 from app.config import ALLOWED_EMOTIONS
+from scripts.data_preprocessing import clean_text
+
+with open("ml/artifacts/thresholds.json") as f:
+    EMOTION_THRESHOLD = json.load(f)
 
 
 def predict_text(text: str):
     model, vocab = load_artifacts()
-
+    text = clean_text(text)
     encoded = encode_text(text, vocab)
     input_tensor = torch.tensor(encoded).unsqueeze(0)
 
@@ -47,6 +51,3 @@ def postprocess_outputs(text: str, sent_threshold=0.5):
         "active_emotions": active_emotions
     }
 
-
-# out = postprocess_outputs("I am happy but also a little scared")
-# print(out)

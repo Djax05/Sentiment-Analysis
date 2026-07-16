@@ -1,4 +1,5 @@
 import torch
+import json
 import pandas as pd
 from .evaluate import evaluate
 from .models import EmotionsSentimentModel
@@ -10,7 +11,10 @@ from .train import (
     metrics
 )
 from utils import ALLOWED_EMOTIONS
-from config import EMOTION_THRESHOLD, PROCESSED_DATA
+from config import PROCESSED_DATA
+
+with open("ml/artifacts/thresholds.json") as f:
+    EMOTION_THRESHOLD = json.load(f)
 
 
 def import_data(PROCESSED_DATA):
